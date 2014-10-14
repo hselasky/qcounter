@@ -429,13 +429,17 @@ QcShowValue :: paintEvent(QPaintEvent *event)
 		desc = QString("%1").arg(card.value % 10);
 		break;
 	case 2:
-		desc = QString("%1-%2").arg((card.value / 10) % 10).arg(card.value % 10);
+		desc = QString("%1%2").arg((card.value / 10) % 10)
+		  .arg(card.value % 10);
 		break;
 	case 3:
-		desc = QString("%1-%2-%3").arg((card.value / 100) % 10).arg((card.value / 10) % 10).arg(card.value % 10);
+		desc = QString("%1%2%3").arg((card.value / 100) % 10)
+		  .arg((card.value / 10) % 10).arg(card.value % 10);
 		break;
 	case 4:
-		desc = QString("%1-%2-%3-%4").arg((card.value / 1000) % 10).arg((card.value / 100) % 10).arg((card.value / 10) % 10).arg(card.value % 10);
+		desc = QString("%1%2%3%4").arg((card.value / 1000) % 10)
+		  .arg((card.value / 100) % 10).arg((card.value / 10) % 10)
+		  .arg(card.value % 10);
 		break;
 	default:
 		desc = QString("?");
