@@ -349,6 +349,7 @@ QcControlTab :: handle_redraw()
 	if (pc != 0) {
 		mw->fullscreen->val_main->card = *pc;
 		mw->fullscreen->val_main->show();
+		mw->fullscreen->val_main->update();
 
 		mw->control_tab->val_main->card = *pc;
 		mw->control_tab->val_main->show();
@@ -377,6 +378,7 @@ QcControlTab :: handle_redraw()
 			if (off < history) {
 				mw->fullscreen->val_history[off]->card = *pc;
 				mw->fullscreen->val_history[off]->show();
+				mw->fullscreen->val_history[off]->update();
 				map[off] = 1;
 			}
 		}
