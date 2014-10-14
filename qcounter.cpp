@@ -329,6 +329,9 @@ QcControlTab :: handle_redraw()
 	} else {
 		mw->fullscreen->val_main->hide();
 		mw->control_tab->val_main->hide();
+
+		for (x = 0; x != QB_MAX_HISTORY; x++)
+			mw->fullscreen->val_history[x]->hide();
 	}
 	mw->fullscreen->update();
 }
