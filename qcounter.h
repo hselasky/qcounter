@@ -64,7 +64,7 @@
 #include <QTime>
 
 #define	QB_MAX_SERIES 8
-#define	QB_MAX_HISTORY 4
+#define	QB_MAX_HISTORY 16
 
 class QcMainWindow;
 
@@ -160,6 +160,7 @@ public:
 	QcCardHeadT head_used;
 
 	int num_free;
+	int num_used;
 
 	QcMainWindow *mw;
 
@@ -167,6 +168,8 @@ public:
 	QcConfigEntries *cfg_entries;
 	QPushButton *cfg_generate;
 	QPushButton *cfg_font;
+	QSpinBox *cfg_series;
+	QSpinBox *cfg_history;
 	QLabel *lbl_status;
 
 public slots:
@@ -198,6 +201,7 @@ public:
 	QTimer *timer;
 
 	int timer_count;
+	int last_history;
 
 public slots:
 	void handle_redraw();
@@ -218,6 +222,7 @@ public:
 	QcMainWindow *mw;
 
 	QGridLayout *main_gl;
+	QcGridLayout *history_gl;
 
 	QcShowValue *val_main;
 	QcShowValue *val_history[QB_MAX_HISTORY];

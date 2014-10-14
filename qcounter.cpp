@@ -86,6 +86,7 @@ QcConfigTab :: QcConfigTab(QcMainWindow *_mw)
 	mw = _mw;
 
 	num_free = 0;
+	num_used = 0;
 
 	TAILQ_INIT(&head_free);
 	TAILQ_INIT(&head_used);
@@ -106,9 +107,25 @@ QcConfigTab :: QcConfigTab(QcMainWindow *_mw)
 	cfg_font = new QPushButton(tr("Font"));
 	connect(cfg_font, SIGNAL(released()), this, SLOT(handle_font()));
 
+	cfg_series = new QSpinBox();
+	cfg_series->setRange(0,QB_MAX_HISTORY);
+	connect(cfg_series, SIGNAL(valueChanged(int)), this, SLOT(handle_changed()));
+
+	cfg_history = new QSpinBox();
+	cfg_history->setRange(0,QB_MAX_HISTORY);
+	cfg_history->setValue(4);
+	connect(cfg_history, SIGNAL(valueChanged(int)), this, SLOT(handle_changed()));
+
 	main_gl->addWidget(cfg_entries, 0,0,1,4);
+
+	main_gl->addWidget(new QLabel(tr("History length")),1,0,1,1);
+	main_gl->addWidget(cfg_history,1,1,1,1);
+
+	main_gl->addWidget(new QLabel(tr("Series length")),1,2,1,1);
+	main_gl->addWidget(cfg_series,1,3,1,1);
+
 	main_gl->addWidget(cfg_generate, 3, 0, 1, 1);
-	main_gl->addWidget(lbl_status, 3, 1, 1, 1);
+	main_gl->addWidget(lbl_status, 3, 1, 1, 2);
 	main_gl->addWidget(cfg_font, 3, 3, 1, 1);
 
 	main_gl->setRowStretch(4, 1);
@@ -153,6 +170,7 @@ QcConfigTab :: drawCard(int final)
 		TAILQ_REMOVE(&head_free, pc, entry);
 		TAILQ_INSERT_HEAD(&head_used, pc, entry);
 		num_free--;
+		num_used++;
 	}
 	return (pc);
 }
@@ -168,6 +186,7 @@ QcConfigTab :: undoCard(int final)
 		TAILQ_REMOVE(&head_used, pc, entry);
 		TAILQ_INSERT_TAIL(&head_free, pc, entry);
 		num_free++;
+		num_used--;
 	}
 	return (pc);
 }
@@ -180,6 +199,7 @@ QcConfigTab :: handle_generate()
 	int y;
 
 	num_free = 0;
+	num_used = 0;
 	mw->digits = 0;
 
 	while ((pc = TAILQ_FIRST(&head_free)) != 0) {
@@ -221,8 +241,7 @@ QcConfigTab :: handle_generate()
 	}
 
 	lbl_status->setText(tr("Generated %1 cards").arg(num_free));
-
-	mw->control_tab->handle_redraw();
+	handle_changed();
 }
 
 void
@@ -241,7 +260,7 @@ QcConfigTab :: handle_font()
 void
 QcConfigTab :: handle_changed()
 {
-	mw->fullscreen->update();
+	mw->control_tab->handle_redraw();
 	mw->control_tab->update();
 }
 
@@ -255,7 +274,9 @@ QcControlTab :: QcControlTab(QcMainWindow *_mw)
 
 	timer = new QTimer();
 	connect(timer, SIGNAL(timeout()), this, SLOT(handle_timer()));
+
 	timer_count = 0;
+	last_history = 0;
 
 	controls_gb = new QcGroupBox(tr("Controls"));
 
@@ -293,8 +314,7 @@ QcControlTab :: handle_undo()
 	timer->stop();
 
 	mw->config_tab->undoCard(1);
-
-	handle_redraw();
+	mw->config_tab->handle_changed();
 }
 
 void
@@ -307,7 +327,24 @@ void
 QcControlTab :: handle_redraw()
 {
 	QcCard *pc = TAILQ_FIRST(&mw->config_tab->head_used);
+	int series = mw->config_tab->cfg_series->value();
+	int history = mw->config_tab->cfg_history->value();
+	int used = mw->config_tab->num_used;
 	int x;
+
+	if (history != last_history) {
+		last_history = history;
+
+		for (x = 0; x != QB_MAX_HISTORY; x++) {
+			mw->fullscreen->history_gl->removeWidget(mw->fullscreen->val_history[x]);
+			mw->fullscreen->history_gl->setRowStretch(x,0);
+		}
+
+		for (x = 0; x != history; x++) {
+			mw->fullscreen->history_gl->addWidget(mw->fullscreen->val_history[x],x,0,1,1);
+			mw->fullscreen->history_gl->setRowStretch(x,1);
+		}
+	}
 
 	if (pc != 0) {
 		mw->fullscreen->val_main->card = *pc;
@@ -317,15 +354,36 @@ QcControlTab :: handle_redraw()
 		mw->control_tab->val_main->show();
 		mw->control_tab->val_main->update();
 
+		uint8_t map[QB_MAX_HISTORY];
+
+		memset(map, 0, sizeof(map));
+
 		for (x = 0; x != QB_MAX_HISTORY; x++) {
+			int off;
+
+			if (series > 0)
+				off = (used - x - 1) % series;
+			else
+				off = x;
+
 			pc = TAILQ_NEXT(pc, entry);
-			if (pc == 0)
+
+			/* check if we enter previous series */
+			if (pc == 0 || (series > 0 && off == 0))
 				break;
-			mw->fullscreen->val_history[x]->card = *pc;
-			mw->fullscreen->val_history[x]->show();
+
+			off--;
+
+			if (off < history) {
+				mw->fullscreen->val_history[off]->card = *pc;
+				mw->fullscreen->val_history[off]->show();
+				map[off] = 1;
+			}
 		}
-		for ( ; x != QB_MAX_HISTORY; x++)
-			mw->fullscreen->val_history[x]->hide();
+		for (x = 0; x != QB_MAX_HISTORY; x++) {
+			if (map[x] == 0)
+				mw->fullscreen->val_history[x]->hide();
+		}
 	} else {
 		mw->fullscreen->val_main->hide();
 		mw->control_tab->val_main->hide();
@@ -445,16 +503,18 @@ QcFullScreen :: QcFullScreen(QcMainWindow *_mw)
 
 	main_gl = new QGridLayout(this);
 
+	history_gl = new QcGridLayout();
+
 	val_main = new QcShowValue(_mw);
 	val_main->hide();
 
 	for (x = 0; x != QB_MAX_HISTORY; x++) {
 		val_history[x] = new QcShowValue(_mw);
 		val_history[x]->hide();
-		main_gl->addWidget(val_history[x], x, 0, 1, 1);
 	}
 
-	main_gl->addWidget(val_main, 0, 1, QB_MAX_HISTORY, 1);
+	main_gl->addWidget(history_gl, 0, 0, 1, 1);
+	main_gl->addWidget(val_main, 0, 1, 1, 1);
 
 	main_gl->setColumnStretch(0, 1);
 	main_gl->setColumnStretch(1, 2);
