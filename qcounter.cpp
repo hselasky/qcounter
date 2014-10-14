@@ -36,6 +36,7 @@ QcSolidColor :: setColor(const QColor newcolor)
 {
 	color = newcolor;
 	setPalette(QPalette(newcolor));
+	update();
 }
 
 void
@@ -47,7 +48,6 @@ QcSolidColor :: handle_released()
 		setColor(diag->currentColor());
 		changed();
 	}
-
 	delete diag;
 }
 
@@ -261,7 +261,6 @@ void
 QcConfigTab :: handle_changed()
 {
 	mw->control_tab->handle_redraw();
-	mw->control_tab->update();
 }
 
 QcControlTab :: QcControlTab(QcMainWindow *_mw)
@@ -349,7 +348,6 @@ QcControlTab :: handle_redraw()
 	if (pc != 0) {
 		mw->fullscreen->val_main->card = *pc;
 		mw->fullscreen->val_main->show();
-		mw->fullscreen->val_main->update();
 
 		mw->control_tab->val_main->card = *pc;
 		mw->control_tab->val_main->show();
@@ -373,12 +371,12 @@ QcControlTab :: handle_redraw()
 			if (pc == 0 || (series > 0 && off == 0))
 				break;
 
-			off--;
+			if (series > 0)
+				off--;
 
 			if (off < history) {
 				mw->fullscreen->val_history[off]->card = *pc;
 				mw->fullscreen->val_history[off]->show();
-				mw->fullscreen->val_history[off]->update();
 				map[off] = 1;
 			}
 		}
