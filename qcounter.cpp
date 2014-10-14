@@ -23,8 +23,6 @@
  * SUCH DAMAGE.
  */
 
-#include <pthread.h>
-
 #include "qcounter.h"
 
 QcSolidColor :: QcSolidColor() : QPushButton(QString(""))
@@ -138,7 +136,11 @@ QcConfigTab :: drawCard(int final)
 	if (num_free == 0)
 		return (0);
 
+#ifdef WIN32
+	value = qrand() % (uint32_t)num_free;
+#else
 	value = arc4random() % (uint32_t)num_free;
+#endif
 	if (value < 0)
 		value = (num_free + value) % value;
 
@@ -494,12 +496,15 @@ QcMainWindow :: QcMainWindow()
 Q_DECL_EXPORT int
 main(int argc, char **argv)
 {
-	/* must be first, before any threads are created */
-	signal(SIGPIPE, SIG_IGN);
-
 	QApplication app(argc, argv);
 
+#ifdef WIN32
+	/* XXX hack */
+	QTime t = QTime::currentTime();
+	qsrand(t.minute() * 60000 + t.seconds() * 1000 + t.msec());
+#else
 	arc4random_stir();
+#endif
 
 	/* set consistent double click interval */
 	app.setDoubleClickInterval(250);

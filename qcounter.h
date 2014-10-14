@@ -61,6 +61,7 @@
 #include <QKeyEvent>
 #include <QProcess>
 #include <QThread>
+#include <QTime>
 
 #define	QB_MAX_SERIES 8
 #define	QB_MAX_HISTORY 4
