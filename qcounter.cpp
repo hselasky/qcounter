@@ -501,7 +501,7 @@ main(int argc, char **argv)
 #ifdef WIN32
 	/* XXX hack */
 	QTime t = QTime::currentTime();
-	qsrand(t.minute() * 60000 + t.seconds() * 1000 + t.msec());
+	qsrand(t.minute() * 60000 + t.second() * 1000 + t.msec());
 #else
 	arc4random_stir();
 #endif
