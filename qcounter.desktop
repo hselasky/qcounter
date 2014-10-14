@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Quick Random Counter
+Comment=Random card drawing and display software
+Exec=qcounter
+Icon=qcounter.png
+Categories=Graphics
+Terminal=false
+Type=Application
