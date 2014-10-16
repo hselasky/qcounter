@@ -62,6 +62,7 @@
 #include <QProcess>
 #include <QThread>
 #include <QTime>
+#include <QCheckBox>
 
 #define	QB_MAX_SERIES 8
 #define	QB_MAX_HISTORY 16
@@ -107,6 +108,8 @@ public:
 	~QcSolidColor() { };
 
 	void setColor(const QColor);
+
+	void paintEvent(QPaintEvent *);
 
 	QColor color;
 
@@ -170,12 +173,14 @@ public:
 	QPushButton *cfg_font;
 	QSpinBox *cfg_series;
 	QSpinBox *cfg_history;
+	QCheckBox *cfg_repetitions;
 	QLabel *lbl_status;
 
 public slots:
 	void handle_generate();
 	void handle_font();
 	void handle_changed();
+	void handle_series(int);
 };
 
 class QcControlTab : public QWidget

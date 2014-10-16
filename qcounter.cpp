@@ -35,8 +35,15 @@ void
 QcSolidColor :: setColor(const QColor newcolor)
 {
 	color = newcolor;
-	setPalette(QPalette(newcolor));
 	update();
+}
+
+void
+QcSolidColor :: paintEvent(QPaintEvent *event)
+{
+	QPainter paint(this);
+
+	paint.fillRect(event->rect(), QBrush(color));
 }
 
 void
@@ -110,11 +117,14 @@ QcConfigTab :: QcConfigTab(QcMainWindow *_mw)
 	cfg_series = new QSpinBox();
 	cfg_series->setRange(0,QB_MAX_HISTORY);
 	connect(cfg_series, SIGNAL(valueChanged(int)), this, SLOT(handle_changed()));
+	connect(cfg_series, SIGNAL(valueChanged(int)), this, SLOT(handle_series(int)));
 
 	cfg_history = new QSpinBox();
 	cfg_history->setRange(0,QB_MAX_HISTORY);
 	cfg_history->setValue(4);
 	connect(cfg_history, SIGNAL(valueChanged(int)), this, SLOT(handle_changed()));
+
+	cfg_repetitions = new QCheckBox();
 
 	main_gl->addWidget(cfg_entries, 0,0,1,4);
 
@@ -123,6 +133,9 @@ QcConfigTab :: QcConfigTab(QcMainWindow *_mw)
 
 	main_gl->addWidget(new QLabel(tr("Series length")),1,2,1,1);
 	main_gl->addWidget(cfg_series,1,3,1,1);
+
+	main_gl->addWidget(new QLabel(tr("Allow repeptions when series length > 0")),2,0,1,2);
+	main_gl->addWidget(cfg_repetitions,2,2,1,1);
 
 	main_gl->addWidget(cfg_generate, 3, 0, 1, 1);
 	main_gl->addWidget(lbl_status, 3, 1, 1, 2);
@@ -263,6 +276,13 @@ QcConfigTab :: handle_changed()
 	mw->control_tab->handle_redraw();
 }
 
+void
+QcConfigTab :: handle_series(int value)
+{
+	if (value > 0)
+		cfg_history->setValue(value - 1);
+}
+
 QcControlTab :: QcControlTab(QcMainWindow *_mw)
 {
 	mw = _mw;
@@ -302,8 +322,24 @@ QcControlTab :: QcControlTab(QcMainWindow *_mw)
 void
 QcControlTab :: handle_draw()
 {
-	timer_count = 0;
-	timer->start(250);
+	if (mw->config_tab->cfg_repetitions->isChecked()) {
+		int used = mw->config_tab->num_used;
+		int series = mw->config_tab->cfg_series->value();
+
+		if (series > 0 && (used % series) == 0) {
+			while (used--)
+				mw->config_tab->undoCard(1);
+		}
+	}
+	if (mw->config_tab->num_free == 0) {
+		QString title("Quick Counter");
+		QString msg("All cards are drawn. Try go generate new cards.");
+		QMessageBox box(QMessageBox::Warning, title, msg);
+		box.exec();
+	} else {
+		timer_count = 0;
+		timer->start(250);
+	}
 }
 
 void
