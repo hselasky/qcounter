@@ -333,7 +333,7 @@ QcControlTab :: handle_draw()
 	}
 	if (mw->config_tab->num_free == 0) {
 		QString title("Quick Counter");
-		QString msg("All cards are drawn. Try go generate new cards.");
+		QString msg("All cards are drawn. Try to generate new cards.");
 		QMessageBox box(QMessageBox::Warning, title, msg);
 		box.setWindowIcon(QIcon(QString(":/qcounter.png")));
 		box.exec();
