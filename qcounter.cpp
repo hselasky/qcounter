@@ -335,6 +335,7 @@ QcControlTab :: handle_draw()
 		QString title("Quick Counter");
 		QString msg("All cards are drawn. Try go generate new cards.");
 		QMessageBox box(QMessageBox::Warning, title, msg);
+		box.setWindowIcon(QIcon(QString(":/qcounter.png")));
 		box.exec();
 	} else {
 		timer_count = 0;
