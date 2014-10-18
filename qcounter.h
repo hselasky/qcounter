@@ -202,6 +202,8 @@ public:
 	QPushButton *but_draw;
 	QPushButton *but_undo;
 	QPushButton *but_show;
+	QPushButton *but_generate;
+	QPushButton *but_toggle_blank;
 
 	QTimer *timer;
 
@@ -218,19 +220,25 @@ public slots:
 
 class QcFullScreen : public QWidget
 {
+	Q_OBJECT;
 public:
 	QcFullScreen(QcMainWindow *);
 	~QcFullScreen() { };
 	void keyPressEvent(QKeyEvent *);
 	void mouseDoubleClickEvent(QMouseEvent *);
+	void paintEvent(QPaintEvent *);
 
 	QcMainWindow *mw;
+	int blanked;
 
 	QGridLayout *main_gl;
 	QcGridLayout *history_gl;
 
 	QcShowValue *val_main;
 	QcShowValue *val_history[QB_MAX_HISTORY];
+
+public slots:
+	void handle_toggle_blank();
 };
 
 class QcMainWindow : public QTabWidget

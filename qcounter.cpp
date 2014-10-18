@@ -214,6 +214,7 @@ QcConfigTab :: handle_generate()
 	num_free = 0;
 	num_used = 0;
 	mw->digits = 0;
+	mw->fullscreen->blanked = 1;
 
 	while ((pc = TAILQ_FIRST(&head_free)) != 0) {
 		TAILQ_REMOVE(&head_free, pc, entry);
@@ -308,9 +309,14 @@ QcControlTab :: QcControlTab(QcMainWindow *_mw)
 	but_show = new QPushButton(tr("Show"));
 	connect(but_show, SIGNAL(released()), this, SLOT(handle_show()));
 
+	but_generate = new QPushButton(tr("Generate"));
+	but_toggle_blank = new QPushButton(tr("Toggle blank"));
+
 	controls_gb->addWidget(but_draw, 0, 0, 1, 1);
 	controls_gb->addWidget(but_undo, 0, 3, 1, 1);
 	controls_gb->addWidget(but_show, 0, 4, 1, 1);
+	controls_gb->addWidget(but_generate, 0, 5, 1, 1);
+	controls_gb->addWidget(but_toggle_blank, 0, 6, 1, 1);
 	controls_gb->setColumnStretch(1,1);
 
 	main_gl->addWidget(val_main, 0,0,1,1);
@@ -338,6 +344,7 @@ QcControlTab :: handle_draw()
 		box.setWindowIcon(QIcon(QString(":/qcounter.png")));
 		box.exec();
 	} else {
+		mw->fullscreen->blanked = 0;
 		timer_count = 0;
 		timer->start(250);
 	}
@@ -383,12 +390,16 @@ QcControlTab :: handle_redraw()
 	}
 
 	if (pc != 0) {
-		mw->fullscreen->val_main->card = *pc;
-		mw->fullscreen->val_main->show();
-
 		mw->control_tab->val_main->card = *pc;
 		mw->control_tab->val_main->show();
 		mw->control_tab->val_main->update();
+	} else {
+		mw->control_tab->val_main->hide();
+	}
+
+	if (mw->fullscreen->blanked == 0 && pc != 0) {
+		mw->fullscreen->val_main->card = *pc;
+		mw->fullscreen->val_main->show();
 
 		uint8_t map[QB_MAX_HISTORY];
 
@@ -423,7 +434,6 @@ QcControlTab :: handle_redraw()
 		}
 	} else {
 		mw->fullscreen->val_main->hide();
-		mw->control_tab->val_main->hide();
 
 		for (x = 0; x != QB_MAX_HISTORY; x++)
 			mw->fullscreen->val_history[x]->hide();
@@ -541,6 +551,7 @@ QcFullScreen :: QcFullScreen(QcMainWindow *_mw)
 	setWindowIcon(QIcon(QString(":/qcounter.png")));
 
 	mw = _mw;
+	blanked = 1;
 
 	main_gl = new QGridLayout(this);
 
@@ -559,6 +570,17 @@ QcFullScreen :: QcFullScreen(QcMainWindow *_mw)
 
 	main_gl->setColumnStretch(0, 1);
 	main_gl->setColumnStretch(1, 2);
+}
+
+void
+QcFullScreen :: paintEvent(QPaintEvent *event)
+{
+	if (blanked != 0) {
+		QPainter paint(this);
+		paint.fillRect(event->rect(), QBrush(QColor(0,0,0)));
+	} else {
+		QWidget::paintEvent(event);
+	}
 }
 
 void
@@ -582,6 +604,13 @@ QcFullScreen :: mouseDoubleClickEvent(QMouseEvent *event)
 	event->accept();
 }
 
+void
+QcFullScreen :: handle_toggle_blank()
+{
+	blanked = blanked ? 0 : 1;
+	mw->control_tab->handle_redraw();
+}
+
 QcMainWindow :: QcMainWindow()
 {
 	setWindowTitle(tr("Quick Random Counter"));
@@ -592,6 +621,9 @@ QcMainWindow :: QcMainWindow()
 	config_tab = new QcConfigTab(this);
 	control_tab = new QcControlTab(this);
 	fullscreen = new QcFullScreen(this);
+
+	connect(control_tab->but_generate, SIGNAL(released()), config_tab, SLOT(handle_generate()));
+	connect(control_tab->but_toggle_blank, SIGNAL(released()), fullscreen, SLOT(handle_toggle_blank()));
 
 	insertTab(0, control_tab, tr("Controls"));
 	insertTab(1, config_tab, tr("Configuration"));
