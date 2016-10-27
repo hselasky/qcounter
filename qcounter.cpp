@@ -126,20 +126,28 @@ QcConfigTab :: QcConfigTab(QcMainWindow *_mw)
 
 	cfg_repetitions = new QCheckBox();
 
+	cfg_draw_speed = new QSpinBox();
+	cfg_draw_speed->setRange(25,1000);
+	cfg_draw_speed->setValue(250);
+	cfg_draw_speed->setSuffix(" ms");
+
 	main_gl->addWidget(cfg_entries, 0,0,1,4);
 
-	main_gl->addWidget(new QLabel(tr("History length")),1,0,1,1);
-	main_gl->addWidget(cfg_history,1,1,1,1);
+	main_gl->addWidget(new QLabel(tr("History length")),1,0,1,2);
+	main_gl->addWidget(cfg_history,1,2,1,1);
 
-	main_gl->addWidget(new QLabel(tr("Series length")),1,2,1,1);
-	main_gl->addWidget(cfg_series,1,3,1,1);
+	main_gl->addWidget(new QLabel(tr("Series length")),2,0,1,2);
+	main_gl->addWidget(cfg_series,2,2,1,1);
 
-	main_gl->addWidget(new QLabel(tr("Allow repeptions when series length > 0")),2,0,1,2);
-	main_gl->addWidget(cfg_repetitions,2,2,1,1);
+	main_gl->addWidget(new QLabel(tr("Allow repeptions when series length > 0")),3,0,1,2);
+	main_gl->addWidget(cfg_repetitions,3,2,1,1);
 
-	main_gl->addWidget(cfg_generate, 3, 0, 1, 1);
-	main_gl->addWidget(lbl_status, 3, 1, 1, 2);
-	main_gl->addWidget(cfg_font, 3, 3, 1, 1);
+	main_gl->addWidget(new QLabel(tr("Card drawing speed")),4,0,1,2);
+	main_gl->addWidget(cfg_draw_speed,4,2,1,1);
+
+	main_gl->addWidget(cfg_generate, 5, 0, 1, 1);
+	main_gl->addWidget(lbl_status, 5, 1, 1, 1);
+	main_gl->addWidget(cfg_font, 5, 2, 1, 1);
 
 	main_gl->setRowStretch(4, 1);
 	main_gl->setColumnStretch(1, 1);
@@ -346,7 +354,7 @@ QcControlTab :: handle_draw()
 	} else {
 		mw->fullscreen->blanked = 0;
 		timer_count = 0;
-		timer->start(250);
+		timer->start(mw->config_tab->cfg_draw_speed->value());
 	}
 }
 

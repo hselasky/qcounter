@@ -171,6 +171,7 @@ public:
 	QcConfigEntries *cfg_entries;
 	QPushButton *cfg_generate;
 	QPushButton *cfg_font;
+	QSpinBox *cfg_draw_speed;
 	QSpinBox *cfg_series;
 	QSpinBox *cfg_history;
 	QCheckBox *cfg_repetitions;
