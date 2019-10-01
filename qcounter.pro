@@ -9,7 +9,15 @@ HEADERS		+= qcounter.h
 SOURCES		+= qcounter.cpp
 RESOURCES	+= qcounter.qrc
 
+macx {
+TARGET		= QuickCounter
+} else {
 TARGET		= qcounter
+}
+
+isEmpty(PREFIX) {
+PREFIX          = /usr/local
+}
 
 win32 {
 QMAKE_LFLAGS	+= -static-libgcc -static
@@ -18,10 +26,16 @@ QMAKE_LFLAGS	+= -static-libgcc -static
 target.path	= $${PREFIX}/bin
 INSTALLS	+= target
 
+macx {
+icons.path= $${DESTDIR}/Contents/Resources
+icons.files= qaudiosonar.icns
+QMAKE_BUNDLE_DATA+= icons
+} else {
 icons.path	= $${PREFIX}/share/pixmaps
-icons.files	= qcounter.png
+icons.files	= qcounter_48x48.png
 INSTALLS	+= icons
 
 desktop.path	= $${PREFIX}/share/applications
 desktop.files	= qcounter.desktop
 INSTALLS	+= desktop
+}

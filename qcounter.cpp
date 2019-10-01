@@ -349,7 +349,7 @@ QcControlTab :: handle_draw()
 		QString title("Quick Counter");
 		QString msg("All cards are drawn. Try to generate new cards.");
 		QMessageBox box(QMessageBox::Warning, title, msg);
-		box.setWindowIcon(QIcon(QString(":/qcounter.png")));
+		box.setWindowIcon(QIcon(QString(":/qcounter_48x48.png")));
 		box.exec();
 	} else {
 		mw->fullscreen->blanked = 0;
@@ -556,7 +556,7 @@ QcFullScreen :: QcFullScreen(QcMainWindow *_mw)
 	int x;
 
 	setWindowTitle(tr("Quick Random Counter"));
-	setWindowIcon(QIcon(QString(":/qcounter.png")));
+	setWindowIcon(QIcon(QString(":/qcounter_48x48.png")));
 
 	mw = _mw;
 	blanked = 1;
@@ -622,7 +622,7 @@ QcFullScreen :: handle_toggle_blank()
 QcMainWindow :: QcMainWindow()
 {
 	setWindowTitle(tr("Quick Random Counter"));
-	setWindowIcon(QIcon(QString(":/qcounter.png")));
+	setWindowIcon(QIcon(QString(":/qcounter_48x48.png")));
 
 	digits = 0;
 
