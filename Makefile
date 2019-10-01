@@ -35,7 +35,7 @@ all: Makefile.unix
 	make -f Makefile.unix -j2 all
 
 Makefile.unix: qcounter.pro
-	qmake-qt4 PREFIX=${PREFIX} DESTDIR=${DESTDIR} \
+	qmake PREFIX=${PREFIX} DESTDIR=${DESTDIR} \
 		-o Makefile.unix qcounter.pro
 help:
 	@echo "Targets are: all, install, clean, package, help"
