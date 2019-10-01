@@ -28,7 +28,7 @@ INSTALLS	+= target
 
 macx {
 icons.path= $${DESTDIR}/Contents/Resources
-icons.files= qaudiosonar.icns
+icons.files= qcounter.icns
 QMAKE_BUNDLE_DATA+= icons
 } else {
 icons.path	= $${PREFIX}/share/pixmaps
